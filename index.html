@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandVision Pro - AI Hand Tracking</title>
+    
+    <!-- Meta Tags for SEO -->
+    <meta name="description" content="AI-powered hand tracking and finger counting application using MediaPipe. Premium UI with real-time feedback.">
+    <meta name="keywords" content="MediaPipe, Hand Tracking, Finger Count, AI, Computer Vision, JavaScript">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- MediaPipe Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Landing Page Overlay -->
+    <div id="landing-page" class="overlay-screen">
+        <div class="landing-content">
+            <div class="logo large">HANDVISION <span style="font-weight: 300;">PRO</span></div>
+            <h1>Experience Next-Gen Hand Tracking</h1>
+            <p>Our advanced AI recognizes your hand gestures in real-time. Count fingers, detect hand orientation, and interact with the digital world using just your hands.</p>
+            
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i data-lucide="zap"></i>
+                    <span>Real-time Detection</span>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="pen-tool"></i>
+                    <span>Air Canvas Writing</span>
+                </div>
+                <div class="feature-item">
+                    <i data-lucide="shield-check"></i>
+                    <span>Privacy First</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="start-btn" class="primary-btn">
+                    <i data-lucide="play"></i>
+                    START TRACKING
+                </button>
+                <button id="canvas-btn" class="primary-btn secondary">
+                    <i data-lucide="pencil"></i>
+                    AIR CANVAS
+                </button>
+            </div>
+            
+            <div id="permission-error" class="error-msg hidden">
+                <i data-lucide="alert-circle"></i>
+                <span>Please allow camera access to continue.</span>
+            </div>
+
+            <!-- Developer Credit -->
+            <div class="developer-credit">
+                <p>Developed by <span>Ritik Ranjan</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Controls -->
+    <aside class="sidebar">
+        <div class="logo">HANDVISION <span style="font-weight: 300;">PRO</span></div>
+        
+        <button id="back-btn" class="action-btn secondary hidden">
+            <i data-lucide="arrow-left"></i> BACK TO HOME
+        </button>
+
+        <!-- Canvas Specific Controls -->
+        <div id="canvas-controls" class="control-group hidden">
+            <label><i data-lucide="palette"></i> BRUSH COLOR</label>
+            <div class="color-picker">
+                <div class="color-dot active" style="background: #00f2fe;" data-color="#00f2fe"></div>
+                <div class="color-dot" style="background: #f472b6;" data-color="#f472b6"></div>
+                <div class="color-dot" style="background: #a855f7;" data-color="#a855f7"></div>
+                <div class="color-dot" style="background: #22c55e;" data-color="#22c55e"></div>
+                <div class="color-dot" style="background: #ef4444;" data-color="#ef4444"></div>
+                <div class="color-dot" style="background: #ffffff;" data-color="#ffffff"></div>
+            </div>
+
+            <div class="slider-container" style="margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>Brush Size</label>
+                    <span id="brushSizeValue" class="value-display">5px</span>
+                </div>
+                <input type="range" id="brushSize" min="2" max="30" value="5">
+            </div>
+
+            <button id="clear-canvas" class="action-btn" style="margin-top: 1rem;">
+                <i data-lucide="trash-2"></i> CLEAR CANVAS
+            </button>
+
+            <div class="tip-box">
+                <i data-lucide="info"></i>
+                <p>Raise 5 fingers to clear the entire canvas automatically!</p>
+            </div>
+        </div>
+
+        <!-- Tracking Specific Controls -->
+        <div id="tracking-controls" class="control-group">
+            <label><i data-lucide="settings-2"></i> CAMERA SETTINGS</label>
+            <div class="slider-container">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>Width</label>
+                    <span id="widthValue" class="value-display">800px</span>
+                </div>
+                <input type="range" id="videoWidth" min="320" max="1280" value="800">
+            </div>
+            
+            <div class="slider-container">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>Height</label>
+                    <span id="heightValue" class="value-display">240px</span>
+                </div>
+                <input type="range" id="videoHeight" min="240" max="720" value="600">
+            </div>
+
+            <div class="hand-labels">
+                <div class="hand-label left">
+                    <div class="label-dot"></div>
+                    <span>Left Hand: <b id="leftHandCount">0</b></span>
+                </div>
+                <div class="hand-label right">
+                    <div class="label-dot"></div>
+                    <span>Right Hand: <b id="rightHandCount">0</b></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group" style="margin-top: auto;">
+            <p style="font-size: 0.75rem; color: #64748b; line-height: 1.5;">
+                Advanced AI Hand Recognition. Adjust settings for optimal performance.
+            </p>
+        </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-content">
+        <div id="canvas-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Overlays (Hidden in Canvas Mode) -->
+        <div id="stats-overlay" class="stats-overlay">
+            <div class="stat-card">
+                <i data-lucide="hand"></i>
+                <div class="stat-info">
+                    <div class="label">Total Fingers</div>
+                    <div id="fingerCount" class="value">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <i data-lucide="layers"></i>
+                <div class="stat-info">
+                    <div class="label">Status</div>
+                    <div id="handStatus" class="value">Awaiting Camera...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="finger-indicator" class="finger-indicator">
+            <div class="finger-dot" id="dot-1"></div>
+            <div class="finger-dot" id="dot-2"></div>
+            <div class="finger-dot" id="dot-3"></div>
+            <div class="finger-dot" id="dot-4"></div>
+            <div class="finger-dot" id="dot-5"></div>
+            <div style="width: 10px;"></div>
+            <div class="finger-dot" id="dot-6"></div>
+            <div class="finger-dot" id="dot-7"></div>
+            <div class="finger-dot" id="dot-8"></div>
+            <div class="finger-dot" id="dot-9"></div>
+            <div class="finger-dot" id="dot-10"></div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
