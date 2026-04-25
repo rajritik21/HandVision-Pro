@@ -2,7 +2,7 @@
 
 HandVision Pro is a premium, real-time computer vision application that leverages MediaPipe and JavaScript to provide advanced hand tracking, finger counting, and a futuristic Air Canvas experience.
 
-![HandVision Pro Demo](https://raw.githubusercontent.com/google/mediapipe/master/docs/solutions/hands_landmarks_style.png) <!-- Placeholder: Replace with your own screenshot -->
+![HandVision Pro Demo](Screenshot.png) <!-- Placeholder: Replace with your own screenshot -->
 
 ## 🚀 Features
 
